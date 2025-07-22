@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Block Blast Mini</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: #f0f0f0;
+    }
+
+    h1 {
+      margin: 20px;
+    }
+
+    #grid {
+      display: grid;
+      grid-template-columns: repeat(10, 30px);
+      grid-template-rows: repeat(10, 30px);
+      gap: 2px;
+      background: #333;
+      padding: 5px;
+      margin-bottom: 20px;
+    }
+
+    .cell {
+      width: 30px;
+      height: 30px;
+      background: #eee;
+      border-radius: 3px;
+    }
+
+    .filled {
+      background: #3498db;
+    }
+
+    .block {
+      display: inline-block;
+      margin: 10px;
+      cursor: grab;
+    }
+
+    .block-cell {
+      width: 30px;
+      height: 30px;
+      background: #2ecc71;
+      display: inline-block;
+      margin: 1px;
+    }
+  </style>
+</head>
+<body>
+
+<h1>🧱 Block Blast Mini Game</h1>
+<div id="grid"></div>
+
+<div id="blocks">
+  <!-- Example blocks -->
+  <div class="block" draggable="true" data-shape="1,0;1,1;1,2">
+    <div class="block-cell"></div>
+    <div class="block-cell"></div>
+    <div class="block-cell"></div>
+  </div>
+  <div class="block" draggable="true" data-shape="0,0;1,0;0,1;1,1">
+    <div style="display: flex;">
+      <div class="block-cell"></div>
+      <div class="block-cell"></div>
+    </div>
+    <div style="display: flex;">
+      <div class="block-cell"></div>
+      <div class="block-cell"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const gridSize = 10;
+  const grid = document.getElementById("grid");
+
+  // Initialize grid
+  const cells = [];
+  for (let row = 0; row < gridSize; row++) {
+    for (let col = 0; col < gridSize; col++) {
+      const cell = document.createElement("div");
+      cell.classList.add("cell");
+      cell.dataset.row = row;
+      cell.dataset.col = col;
+      grid.appendChild(cell);
+      cells.push(cell);
+    }
+  }
+
+  let draggedShape = [];
+
+  document.querySelectorAll(".block").forEach(block => {
+    block.addEventListener("dragstart", (e) => {
+      const shapeData = block.dataset.shape;
+      draggedShape = shapeData.split(";").map(s => s.split(",").map(Number));
+    });
+  });
+
+  grid.addEventListener("dragover", (e) => {
+    e.preventDefault();
+  });
+
+  grid.addEventListener("drop", (e) => {
+    const rect = grid.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const cellX = Math.floor(x / 32);
+    const cellY = Math.floor(y / 32);
+
+    if (canPlace(cellX, cellY, draggedShape)) {
+      placeBlock(cellX, cellY, draggedShape);
+    }
+  });
+
+  function canPlace(x, y, shape) {
+    return shape.every(([dx, dy]) => {
+      const tx = x + dx;
+      const ty = y + dy;
+      const index = ty * gridSize + tx;
+      return tx >= 0 && tx < gridSize &&
+             ty >= 0 && ty < gridSize &&
+             !cells[index].classList.contains("filled");
+    });
+  }
+
+  function placeBlock(x, y, shape) {
+    shape.forEach(([dx, dy]) => {
+      const tx = x + dx;
+      const ty = y + dy;
+      const index = ty * gridSize + tx;
+      cells[index].classList.add("filled");
+    });
+  }
+</script>
+
+</body>
+</html>
